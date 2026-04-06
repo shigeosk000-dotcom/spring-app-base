@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="ja" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8" />
+  <title>ToDoアプリ</title>
+  <style>
+    body {
+      font-family: "Yu Gothic","Hiragino Kaku Gothic Pro","Noto Sans JP",sans-serif;
+      background:#f8fafb;
+      margin:0;
+      padding:0;
+    }
+
+    .page {
+      max-width:900px;
+      margin:0 auto;
+      padding:40px 20px 60px;
+    }
+
+    header {
+      text-align:center;
+      margin-bottom:32px;
+    }
+
+    table {
+      width:100%;
+      border-collapse:collapse;
+      margin-bottom:30px;
+      background:#fff;
+      box-shadow:0 2px 6px rgba(15,23,42,.08);
+    }
+
+    th,td {
+      border:1px solid #e2e8f0;
+      padding:8px 12px;
+      text-align:left;
+      font-size:14px;
+    }
+
+    tbody tr.done td {
+      color:#64748b;
+      text-decoration:line-through;
+    }
+
+    .actions button {
+      margin-right:6px;
+      padding:6px 10px;
+      border:none;
+      border-radius:4px;
+      cursor:pointer;
+      font-size:13px;
+    }
+
+    .actions button.primary {
+      background:#2563eb;
+      color:#fff;
+    }
+
+    .actions button.secondary {
+      background:#eef2ff;
+      color:#312e81;
+    }
+
+    form > div {
+      margin-bottom:14px;
+    }
+
+    input[type=text], input[type=date], textarea, select {
+      width:100%;
+      padding:8px 10px;
+      border:1px solid #cbd5f5;
+      border-radius:4px;
+      font-size:14px;
+      box-sizing:border-box;
+    }
+
+    .error {
+      color:#b91c1c;
+      font-size:13px;
+    }
+
+    .flash {
+      padding:10px;
+      background:#e0f2fe;
+      border:1px solid #bae6fd;
+      border-radius:4px;
+      margin-bottom:20px;
+    }
+
+    .tag {
+      display:inline-flex;
+      align-items:center;
+      padding:2px 8px;
+      border-radius:999px;
+      font-size:12px;
+      background:#f1f5f9;
+      color:#0f172a;
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <header>
+      <h1>ToDoアプリ</h1>
+      <p>Spring Boot + Thymeleaf + H2 を活用したシンプルな業務タスク管理</p>
+    </header>
+
+    <div th:if="${message}" class="flash" th:text="${message}"></div>
+
+    <section>
+      <h2>登録済みのタスク</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>ステータス</th>
+            <th>タイトル</th>
+            <th>期日</th>
+            <th>優先度</th>
+            <th>操作</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr th:each="todo : ${todos}" th:classappend="${todo.done} ? 'done' : ''">
+            <td th:text="${todo.done} ? '完了' : '未完了'"></td>
+            <td>
+              <strong th:text="${todo.title}"></strong>
+              <div th:if="${todo.description}" style="font-size:13px; color:#475569;"> <span th:text="${todo.description}"></span></div>
+            </td>
+            <td>
+              <span th:if="${todo.dueDate != null}" th:text="${#temporals.format(todo.dueDate, 'yyyy/MM/dd')}"></span>
+              <span th:unless="${todo.dueDate != null}">未設定</span>
+            </td>
+            <td><span class="tag" th:text="${todo.priority}"></span></td>
+            <td class="actions">
+              <form th:action="@{/todos/{id}/toggle(id=${todo.id})}" method="post" style="display:inline;">
+                <input type="hidden" name="done" th:value="${!todo.done}" />
+                <button type="submit" class="secondary" th:text="${todo.done} ? '再開する' : '完了にする'"></button>
+              </form>
+              <a th:href="@{/todos/{id}/edit(id=${todo.id})}" class="secondary" style="text-decoration:none;">編集</a>
+              <form th:action="@{/todos/{id}/delete(id=${todo.id})}" method="post" style="display:inline;">
+                <button type="submit" class="secondary" style="background:#fee2e2; color:#b91c1c;">削除</button>
+              </form>
+            </td>
+          </tr>
+          <tr th:if="${#lists.isEmpty(todos)}">
+            <td colspan="5" style="text-align:center; color:#475569;">登録されたタスクはありません。</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section>
+      <h2 th:text="${editingId != null} ? 'タスクを編集' : '新しいタスクを登録'"></h2>
+      <form th:action="${editingId != null} ? @{/todos/{id}(id=${editingId})} : @{/todos}" method="post" th:object="${todoForm}">
+        <div>
+          <label for="title">タイトル</label>
+          <input type="text" id="title" th:field="*{title}" maxlength="100" placeholder="例：顧客へ報告" required autofocus />
+          <div th:if="${#fields.hasErrors('title')}" th:errors="*{title}" class="error"></div>
+        </div>
+        <div>
+          <label for="description">説明</label>
+          <textarea id="description" th:field="*{description}" rows="3" maxlength="1000" placeholder="補足や進捗を補足できます"></textarea>
+        </div>
+        <div>
+          <label for="dueDate">期日</label>
+          <input type="date" id="dueDate" th:field="*{dueDate}" />
+        </div>
+        <div>
+          <label for="priority">優先度</label>
+          <select id="priority" th:field="*{priority}">
+            <option th:each="level : ${priorities}" th:value="${level}" th:text="${level}"></option>
+          </select>
+        </div>
+        <div>
+          <label><input type="checkbox" th:field="*{done}" /> 完了済みにする</label>
+        </div>
+        <div class="actions">
+          <button type="submit" class="primary" th:text="${editingId != null} ? '更新する' : '登録する'"></button>
+          <a th:if="${editingId != null}" th:href="@{/todos}" class="secondary" style="text-decoration:none;">キャンセル</a>
+        </div>
+      </form>
+    </section>
+  </div>
+</body>
+</html>
