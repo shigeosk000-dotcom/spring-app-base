@@ -12,10 +12,12 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class Todo {
-	private Long id;
-	private String title;
-	private String description;
-	private LocalDate dueDate;
-	private Priority priority;
-	private boolean done;
+    private Long id;
+    private String userId;
+    private String userName;
+    private String title;
+    private String description;
+    private LocalDate dueDate;
+    private Priority priority;
+    private boolean status;
 }

@@ -9,6 +9,8 @@ import org.apache.ibatis.annotations.Param;
 public interface TodoMapper {
     List<Todo> findAll();
 
+    List<Todo> findByUserId(@Param("userId") String userId);
+
     Todo findById(@Param("id") Long id);
 
     int insert(Todo todo);
@@ -17,5 +19,5 @@ public interface TodoMapper {
 
     int delete(@Param("id") Long id);
 
-    int changeDone(@Param("id") Long id, @Param("done") boolean done);
+    int changeStatus(@Param("id") Long id, @Param("status") boolean status);
 }

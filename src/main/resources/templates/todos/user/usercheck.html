@@ -1,0 +1,84 @@
+﻿<!DOCTYPE html>
+<html lang="ja" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8" />
+  <title>ユーザー詳細</title>
+  <style>
+    body {
+      font-family: "Yu Gothic", "Hiragino Kaku Gothic Pro", "Noto Sans JP", sans-serif;
+      background: #f8fafb;
+      margin: 0;
+      padding: 0;
+    }
+
+    .page {
+      max-width: 720px;
+      margin: 0 auto;
+      padding: 40px 20px 60px;
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 24px;
+    }
+
+    .card {
+      background: #fff;
+      border-radius: 12px;
+      padding: 24px;
+      box-shadow: 0 2px 8px rgba(15, 23, 42, 0.1);
+    }
+
+    dl {
+      display: grid;
+      grid-template-columns: 120px 1fr;
+      gap: 8px 16px;
+      margin: 0;
+    }
+
+    dt {
+      font-weight: 600;
+      color: #475569;
+    }
+
+    dd {
+      margin: 0;
+      color: #0f172a;
+    }
+
+    .status {
+      display: inline-flex;
+      padding: 2px 8px;
+      border-radius: 999px;
+      font-size: 12px;
+      background: #f1f5f9;
+    }
+
+    a {
+      color: #2563eb;
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <header>
+      <h1>ユーザー詳細</h1>
+      <p><a href="/todos/user">一覧に戻る</a></p>
+    </header>
+    <section class="card">
+      <dl>
+        <dt>ID</dt>
+        <dd th:text="${user.id}"></dd>
+        <dt>氏名</dt>
+        <dd th:text="${user.name}"></dd>
+        <dt>権限</dt>
+        <dd th:text="${user.authority} ? '管理者' : '一般職員'"></dd>
+        <dt>状態</dt>
+        <dd>
+          <span class="status" th:text="${user.status} ? '有効' : '無効'"></span>
+        </dd>
+      </dl>
+    </section>
+  </div>
+</body>
+</html>

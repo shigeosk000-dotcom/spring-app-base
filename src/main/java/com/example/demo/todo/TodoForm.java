@@ -14,6 +14,10 @@ public class TodoForm {
     private Long id;
 
     @NotBlank
+    @Size(max = 10)
+    private String userId;
+
+    @NotBlank
     @Size(max = 100)
     private String title;
 
@@ -24,16 +28,17 @@ public class TodoForm {
     private LocalDate dueDate;
 
     private Priority priority = Priority.NORMAL;
-    private boolean done;
+    private boolean status;
 
     public Todo toTodo() {
         return Todo.builder()
             .id(id)
+            .userId(userId)
             .title(title)
             .description(description)
             .dueDate(dueDate)
             .priority(priority == null ? Priority.NORMAL : priority)
-            .done(done)
+            .status(status)
             .build();
     }
 
@@ -43,12 +48,12 @@ public class TodoForm {
         }
         TodoForm form = new TodoForm();
         form.setId(todo.getId());
+        form.setUserId(todo.getUserId());
         form.setTitle(todo.getTitle());
         form.setDescription(todo.getDescription());
         form.setDueDate(todo.getDueDate());
         form.setPriority(todo.getPriority());
-        form.setDone(todo.isDone());
+        form.setStatus(todo.isStatus());
         return form;
     }
 }
-

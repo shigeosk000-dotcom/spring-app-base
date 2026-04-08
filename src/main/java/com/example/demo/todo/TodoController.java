@@ -1,5 +1,7 @@
 package com.example.demo.todo;
 
+import java.util.List;
+
 import jakarta.validation.Valid;
 
 import org.springframework.stereotype.Controller;
@@ -13,6 +15,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import com.example.demo.user.User;
+import com.example.demo.user.UserService;
+
 import lombok.RequiredArgsConstructor;
 
 @Controller
@@ -20,10 +25,16 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class TodoController {
     private final TodoService service;
+    private final UserService userService;
 
     @ModelAttribute("priorities")
     public Priority[] priorities() {
         return Priority.values();
+    }
+
+    @ModelAttribute("users")
+    public List<User> users() {
+        return userService.listActive();
     }
 
     @GetMapping
@@ -43,7 +54,7 @@ public class TodoController {
             return "todos";
         }
         service.create(form.toTodo());
-        redirect.addFlashAttribute("message", "ToDoを追加しました。");
+        redirect.addFlashAttribute("message", "MSG-001：ToDoを登録しました。");
         return "redirect:/todos";
     }
 
@@ -73,20 +84,20 @@ public class TodoController {
         Todo todo = form.toTodo();
         todo.setId(id);
         service.update(todo);
-        redirect.addFlashAttribute("message", "ToDoを更新しました。");
+        redirect.addFlashAttribute("message", "MSG-002：ToDoを更新しました。");
         return "redirect:/todos";
     }
 
     @PostMapping("/{id}/toggle")
-    public String toggle(@PathVariable Long id, @RequestParam boolean done) {
-        service.changeDone(id, done);
+    public String toggle(@PathVariable Long id, @RequestParam boolean status) {
+        service.changeStatus(id, status);
         return "redirect:/todos";
     }
 
     @PostMapping("/{id}/delete")
     public String delete(@PathVariable Long id, RedirectAttributes redirect) {
         service.delete(id);
-        redirect.addFlashAttribute("message", "ToDoを削除しました。");
+        redirect.addFlashAttribute("message", "MSG-003：ToDoを削除しました。");
         return "redirect:/todos";
     }
 }

@@ -16,6 +16,10 @@ public class TodoService {
         return mapper.findAll();
     }
 
+    public List<Todo> listByUser(String userId) {
+        return mapper.findByUserId(userId);
+    }
+
     public Todo findById(Long id) {
         return mapper.findById(id);
     }
@@ -33,7 +37,7 @@ public class TodoService {
         mapper.delete(id);
     }
 
-    public void changeDone(Long id, boolean done) {
-        mapper.changeDone(id, done);
+    public void changeStatus(Long id, boolean status) {
+        mapper.changeStatus(id, status);
     }
 }

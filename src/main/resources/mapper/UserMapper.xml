@@ -1,0 +1,56 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.demo.user.UserMapper">
+
+  <resultMap id="UserResult" type="com.example.demo.user.User">
+    <id property="id" column="id" />
+    <result property="name" column="name" />
+    <result property="password" column="password" />
+    <result property="authority" column="authority" />
+    <result property="status" column="status" />
+  </resultMap>
+
+  <select id="findAll" resultMap="UserResult">
+    SELECT id, name, password, authority, status
+    FROM user_list
+    ORDER BY id
+  </select>
+
+  <select id="findActive" resultMap="UserResult">
+    SELECT id, name, password, authority, status
+    FROM user_list
+    WHERE status = TRUE
+    ORDER BY name
+  </select>
+
+  <select id="findById" resultMap="UserResult">
+    SELECT id, name, password, authority, status
+    FROM user_list
+    WHERE id = #{id}
+  </select>
+
+  <insert id="insert" parameterType="com.example.demo.user.User">
+    INSERT INTO user_list (id, name, password, authority, status)
+    VALUES (#{id}, #{name}, #{password}, #{authority}, #{status})
+  </insert>
+
+  <update id="update" parameterType="com.example.demo.user.User">
+    UPDATE user_list
+    SET name = #{name},
+        password = #{password},
+        authority = #{authority},
+        status = #{status}
+    WHERE id = #{id}
+  </update>
+
+  <update id="changeStatus">
+    UPDATE user_list
+    SET status = #{status}
+    WHERE id = #{id}
+  </update>
+
+  <delete id="delete">
+    DELETE FROM user_list
+    WHERE id = #{id}
+  </delete>
+</mapper>

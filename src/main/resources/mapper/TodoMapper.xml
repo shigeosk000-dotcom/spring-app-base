@@ -1,40 +1,74 @@
-<?xml version="1.0" encoding="UTF-8"?>
+﻿<?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.example.demo.todo.TodoMapper">
 
   <resultMap id="TodoResult" type="com.example.demo.todo.Todo">
     <id property="id" column="id" />
+    <result property="userId" column="user_id" />
+    <result property="userName" column="user_name" />
     <result property="title" column="title" />
     <result property="description" column="description" />
     <result property="dueDate" column="due_date" />
     <result property="priority" column="priority" />
-    <result property="done" column="done" />
+    <result property="status" column="status" />
   </resultMap>
 
   <select id="findAll" resultMap="TodoResult">
-    SELECT id, title, description, due_date, priority, done
-    FROM todo
-    ORDER BY CASE WHEN due_date IS NULL THEN 1 ELSE 0 END, due_date, id
+    SELECT t.id,
+           t.user_id,
+           u.name AS user_name,
+           t.title,
+           t.description,
+           t.due_date,
+           t.priority,
+           t.status
+    FROM todo t
+    LEFT JOIN user_list u ON u.id = t.user_id
+    ORDER BY CASE WHEN t.due_date IS NULL THEN 1 ELSE 0 END, t.due_date, t.id
+  </select>
+
+  <select id="findByUserId" resultMap="TodoResult">
+    SELECT t.id,
+           t.user_id,
+           u.name AS user_name,
+           t.title,
+           t.description,
+           t.due_date,
+           t.priority,
+           t.status
+    FROM todo t
+    LEFT JOIN user_list u ON u.id = t.user_id
+    WHERE t.user_id = #{userId}
+    ORDER BY CASE WHEN t.due_date IS NULL THEN 1 ELSE 0 END, t.due_date, t.id
   </select>
 
   <select id="findById" resultMap="TodoResult">
-    SELECT id, title, description, due_date, priority, done
-    FROM todo
-    WHERE id = #{id}
+    SELECT t.id,
+           t.user_id,
+           u.name AS user_name,
+           t.title,
+           t.description,
+           t.due_date,
+           t.priority,
+           t.status
+    FROM todo t
+    LEFT JOIN user_list u ON u.id = t.user_id
+    WHERE t.id = #{id}
   </select>
 
   <insert id="insert" parameterType="com.example.demo.todo.Todo" useGeneratedKeys="true" keyProperty="id">
-    INSERT INTO todo (title, description, due_date, priority, done)
-    VALUES (#{title}, #{description}, #{dueDate}, #{priority}, #{done})
+    INSERT INTO todo (user_id, title, description, due_date, priority, status)
+    VALUES (#{userId}, #{title}, #{description}, #{dueDate}, #{priority}, #{status})
   </insert>
 
   <update id="update" parameterType="com.example.demo.todo.Todo">
     UPDATE todo
-    SET title = #{title},
+    SET user_id = #{userId},
+        title = #{title},
         description = #{description},
         due_date = #{dueDate},
         priority = #{priority},
-        done = #{done}
+        status = #{status}
     WHERE id = #{id}
   </update>
 
@@ -43,9 +77,9 @@
     WHERE id = #{id}
   </delete>
 
-  <update id="changeDone">
+  <update id="changeStatus">
     UPDATE todo
-    SET done = #{done}
+    SET status = #{status}
     WHERE id = #{id}
   </update>
 </mapper>
