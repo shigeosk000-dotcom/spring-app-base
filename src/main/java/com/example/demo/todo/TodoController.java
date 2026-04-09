@@ -2,6 +2,7 @@ package com.example.demo.todo;
 
 import java.util.List;
 
+import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
 
 import org.springframework.stereotype.Controller;
@@ -35,6 +36,11 @@ public class TodoController {
     @ModelAttribute("users")
     public List<User> users() {
         return userService.listActive();
+    }
+
+    @ModelAttribute("currentUser")
+    public User currentUser(HttpSession session) {
+        return session != null ? (User) session.getAttribute("currentUser") : null;
     }
 
     @GetMapping

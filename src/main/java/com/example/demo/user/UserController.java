@@ -1,5 +1,6 @@
 package com.example.demo.user;
 
+import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
 
 import org.springframework.stereotype.Controller;
@@ -13,6 +14,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import com.example.demo.user.User;
+import com.example.demo.user.UserService;
+
 import lombok.RequiredArgsConstructor;
 
 @Controller
@@ -20,6 +24,11 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class UserController {
     private final UserService userService;
+
+    @ModelAttribute("currentUser")
+    public User currentUser(HttpSession session) {
+        return session != null ? (User) session.getAttribute("currentUser") : null;
+    }
 
     @GetMapping
     public String list(Model model) {

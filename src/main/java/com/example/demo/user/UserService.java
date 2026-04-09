@@ -44,6 +44,20 @@ public class UserService {
         mapper.update(user);
     }
 
+    public User authenticate(String id, String password) {
+        if (id == null || id.isBlank() || password == null || password.isBlank()) {
+            throw new IllegalArgumentException("IDとパスワードを入力してください。");
+        }
+        User user = mapper.findById(id);
+        if (user == null || !user.isStatus()) {
+            throw new IllegalArgumentException("ユーザーが存在しないか無効です。");
+        }
+        if (!password.equals(user.getPassword())) {
+            throw new IllegalArgumentException("IDまたはパスワードが正しくありません。");
+        }
+        return user;
+    }
+
     public void changeStatus(String id, boolean status) {
         mapper.changeStatus(id, status);
     }

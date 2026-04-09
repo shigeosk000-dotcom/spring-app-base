@@ -2,7 +2,7 @@
 <html lang="ja" xmlns:th="http://www.thymeleaf.org">
 <head>
   <meta charset="UTF-8" />
-  <title>ログイン（簡易画面）</title>
+  <title>ログイン</title>
   <style>
     body {
       font-family: "Yu Gothic", "Hiragino Kaku Gothic Pro", "Noto Sans JP", sans-serif;
@@ -38,9 +38,42 @@
       color: #cbd5f5;
     }
 
-    a {
+    form {
+      margin-top: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    input[type=text],
+    input[type=password] {
+      width: 100%;
+      padding: 10px;
+      border-radius: 6px;
+      border: 1px solid #94a3b8;
+      background: #0f172a;
+      color: #fff;
+    }
+
+    .actions button {
+      padding: 10px 16px;
+      border-radius: 6px;
+      border: none;
+      background: #22d3ee;
+      color: #0f172a;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    .error {
+      color: #fecdd3;
+      font-size: 13px;
+    }
+
+    .links a {
       color: #38bdf8;
       text-decoration: none;
+      margin: 0 4px;
     }
   </style>
 </head>
@@ -48,8 +81,22 @@
   <div class="page">
     <div class="card">
       <h1>簡易ログイン</h1>
-      <p>仕様書ではログイン画面が要求されていますが、認証部分は省略し、画面のみ用意しました。</p>
-      <p><a href="/todos">タスク一覧へ戻る</a></p>
+      <p th:if="${message}" th:text="${message}"></p>
+      <form th:action="@{/todos/login}" th:object="${loginForm}" method="post">
+        <p class="error" th:if="${#fields.hasGlobalErrors()}" th:text="${#fields.globalErrors[0].defaultMessage}"></p>
+        <div>
+          <input type="text" th:field="*{id}" placeholder="ユーザーID" autocomplete="username" />
+          <div class="error" th:if="${#fields.hasErrors('id')}" th:errors="*{id}"></div>
+        </div>
+        <div>
+          <input type="password" th:field="*{password}" placeholder="パスワード" autocomplete="current-password" />
+          <div class="error" th:if="${#fields.hasErrors('password')}" th:errors="*{password}"></div>
+        </div>
+        <div class="actions">
+          <button type="submit">ログイン</button>
+        </div>
+        <p class="links">利用できるアカウント: admin / staff01 / staff02</p>
+      </form>
     </div>
   </div>
 </body>
