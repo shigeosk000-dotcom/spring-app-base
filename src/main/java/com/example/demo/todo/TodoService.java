@@ -24,8 +24,9 @@ public class TodoService {
         return mapper.findById(id);
     }
 
-    public void create(Todo todo) {
+    public Todo create(Todo todo) {
         mapper.insert(todo);
+        return todo;
     }
 
     @Transactional

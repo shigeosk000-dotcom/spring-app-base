@@ -4,6 +4,6 @@ INSERT INTO user_list (id, name, password, authority, status) VALUES
   ('staff02', '一般職員B', 'staff-pass', FALSE, FALSE);
 
 INSERT INTO todo (user_id, title, description, due_date, priority, status) VALUES
-  ('admin', 'リリース確認', 'リリース前の依存ライブラリと環境設定を再確認する。', DATE '2026-04-10', 'HIGH', FALSE),
-  ('staff01', 'ドキュメント整理', '仕様書と議事録をひとまとめにし、共有ドライブに保存する。', DATE '2026-04-08', 'NORMAL', FALSE),
-  ('staff01', '週次報告', '進捗と懸念点をまとめて部門長に報告する。', DATE '2026-04-09', 'LOW', TRUE);
+  ('admin', 'データベース設計レビュー', '設計書を確認して、コメントを登録します。', DATE '2026-04-10', 'HIGH', FALSE),
+  ('staff01', '顧客訪問準備', '訪問資料を最終確認し、パッケージを作成します。', DATE '2026-04-08', 'NORMAL', FALSE),
+  ('staff01', '週次報告の提出', '進捗をまとめて上長へ報告します。', DATE '2026-04-09', 'LOW', TRUE);

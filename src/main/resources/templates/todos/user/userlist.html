@@ -109,7 +109,13 @@
   <div class="page">
     <header>
       <h1>ユーザー管理</h1>
-      <p>管理者・一般職員を登録・編集し、状態を切り替えられます。</p>
+      <div style="display:flex; justify-content:space-between; align-items:center;">
+        <p>管理者・一般職員を登録・編集し、状態を切り替えられます。</p>
+        <form th:action="@{/todos/logout}" method="post" style="margin:0;">
+          <span th:if="${currentUser != null}" th:text="${currentUser.name} + ' (' + ${currentUser.id} + ')'"></span>
+          <button type="submit" style="margin-left:12px; background:#2563eb; color:#fff; border:none; padding:6px 10px; border-radius:4px;">ログアウト</button>
+        </form>
+      </div>
       <p><a href="/todos">タスク一覧に戻る</a></p>
     </header>
 

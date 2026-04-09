@@ -1,0 +1,77 @@
+﻿<!DOCTYPE html>
+<html lang="ja" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8" />
+  <title>タスク一覧</title>
+  <style>
+    body { font-family:"Yu Gothic","Noto Sans JP",sans-serif; background:#f8fafb; margin:0; padding:0; }
+    .page { max-width:960px; margin:0 auto; padding:40px 20px 60px; }
+    header { margin-bottom:24px; display:flex; align-items:center; justify-content:space-between; }
+    table { width:100%; border-collapse:collapse; background:#fff; border:1px solid #e2e8f0; }
+    th,td { border:1px solid #e2e8f0; padding:10px; }
+    .tag { display:inline-flex; padding:2px 8px; border-radius:999px; background:#f1f5f9; }
+    .actions { display:flex; gap:6px; }
+    .actions a, .actions button { border:none; padding:6px 10px; border-radius:4px; cursor:pointer; font-size:13px; }
+    .actions button.toggle { background:#10b981; color:#fff; }
+    .actions button.delete { background:#fee2e2; color:#991b1b; }
+    .flash { margin-bottom:16px; padding:12px; background:#e0f2fe; border:1px solid #bae6fd; }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <header>
+      <h1>タスク一覧</h1>
+      <div>
+        <a href="/todos/task/taskedit" style="margin-right:8px; background:#2563eb; color:#fff; padding:6px 12px; border-radius:4px; text-decoration:none;">新規作成</a>
+        <form th:action="@{/todos/logout}" method="post" style="display:inline;">
+          <button type="submit" style="background:#94a3b8; color:#fff; border:none; padding:6px 12px; border-radius:4px;">ログアウト</button>
+        </form>
+      </div>
+    </header>
+
+    <div th:if="${message}" class="flash" th:text="${message}"></div>
+
+    <table>
+      <thead>
+        <tr>
+          <th>担当者</th>
+          <th>タイトル</th>
+          <th>期限</th>
+          <th>優先度</th>
+          <th>ステータス</th>
+          <th>操作</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr th:each="todo : ${todos}">
+          <td>
+            <strong th:text="${todo.userName != null} ? todo.userName : todo.userId"></strong>
+            <div style="font-size:12px; color:#475569;" th:text="${todo.userId}"></div>
+          </td>
+          <td th:text="${todo.title}"></td>
+          <td>
+            <span th:if="${todo.dueDate != null}" th:text="${#temporals.format(todo.dueDate,'yyyy/MM/dd')}">-</span>
+            <span th:unless="${todo.dueDate != null}">期限未設定</span>
+          </td>
+          <td><span class="tag" th:text="${todo.priority}"></span></td>
+          <td><span th:text="${todo.status} ? '完了' : '未完了'"></span></td>
+          <td class="actions">
+            <form th:action="@{/todos/task/tasklist/{id}/toggle(id=${todo.id})}" method="post">
+              <input type="hidden" name="status" th:value="${!todo.status}" />
+              <button type="submit" class="toggle" th:text="${todo.status} ? '未完了' : '完了'"></button>
+            </form>
+            <a th:href="@{/todos/task/taskedit/{id}(id=${todo.id})}" style="background:#3b82f6; color:#fff;">編集</a>
+            <form th:action="@{/todos/task/tasklist/{id}/delete(id=${todo.id})}" method="post" style="display:inline;">
+              <button type="submit" class="delete">削除</button>
+            </form>
+            <a th:href="@{/todos/task/taskcheck/{id}(id=${todo.id})}" style="border:none; background:#f97316; color:#fff; padding:6px 10px; border-radius:4px; text-decoration:none;">確認</a>
+          </td>
+        </tr>
+        <tr th:if="${#lists.isEmpty(todos)}">
+          <td colspan="6" style="text-align:center; padding:20px; color:#475569;">登録済みのタスクがありません。</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</body>
+</html>

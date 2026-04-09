@@ -25,7 +25,7 @@ public class UserService {
 
     public void create(UserForm form) {
         if (form.getPassword() == null || form.getPassword().isBlank()) {
-            throw new IllegalArgumentException("パスワードを入力してください。");
+            throw new IllegalArgumentException("パスワードは必須です。");
         }
         mapper.insert(form.toUser());
     }
@@ -33,7 +33,7 @@ public class UserService {
     public void update(UserForm form) {
         User existing = mapper.findById(form.getId());
         if (existing == null) {
-            throw new IllegalArgumentException("指定されたユーザーが見つかりません。");
+            throw new IllegalArgumentException("指定されたユーザーは存在しません。");
         }
         String password = form.getPassword();
         if (password == null || password.isBlank()) {
@@ -46,14 +46,14 @@ public class UserService {
 
     public User authenticate(String id, String password) {
         if (id == null || id.isBlank() || password == null || password.isBlank()) {
-            throw new IllegalArgumentException("IDとパスワードを入力してください。");
+            throw new IllegalArgumentException("ログインIDとパスワードを入力してください。");
         }
         User user = mapper.findById(id);
         if (user == null || !user.isStatus()) {
-            throw new IllegalArgumentException("ユーザーが存在しないか無効です。");
+            throw new IllegalArgumentException("このユーザーは利用できません。");
         }
         if (!password.equals(user.getPassword())) {
-            throw new IllegalArgumentException("IDまたはパスワードが正しくありません。");
+            throw new IllegalArgumentException("ログインIDまたはパスワードが正しくありません。");
         }
         return user;
     }

@@ -30,7 +30,7 @@ public class LoginController {
 
     @GetMapping("/login")
     public String showLogin(Model model) {
-        model.addAttribute("message", "ログインID／パスワードを入力してください。");
+        model.addAttribute("message", "ログインIDとパスワードを入力してください。");
         return "todos/login";
     }
 
@@ -46,7 +46,7 @@ public class LoginController {
         try {
             User user = userService.authenticate(form.getId(), form.getPassword());
             session.setAttribute("currentUser", user);
-            String target = user.isAuthority() ? "/todos/user" : "/todos";
+            String target = user.isAuthority() ? "/todos/user" : "/todos/task/tasklist";
             return "redirect:" + target;
         } catch (IllegalArgumentException ex) {
             binding.reject("login", ex.getMessage());

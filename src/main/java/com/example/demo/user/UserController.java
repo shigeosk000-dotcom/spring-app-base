@@ -14,9 +14,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-import com.example.demo.user.User;
-import com.example.demo.user.UserService;
-
 import lombok.RequiredArgsConstructor;
 
 @Controller
@@ -49,7 +46,7 @@ public class UserController {
             Model model,
             RedirectAttributes redirect) {
         if (form.getPassword() == null || form.getPassword().isBlank()) {
-            binding.rejectValue("password", "NotBlank", "パスワードを入力してください。");
+            binding.rejectValue("password", "NotBlank", "パスワードは必須です。");
         }
         if (binding.hasErrors()) {
             model.addAttribute("isEdit", false);
@@ -70,7 +67,7 @@ public class UserController {
     public String edit(@PathVariable String id, Model model, RedirectAttributes redirect) {
         User user = userService.findById(id);
         if (user == null) {
-            redirect.addFlashAttribute("message", "指定されたユーザーが存在しません。");
+            redirect.addFlashAttribute("message", "指定されたユーザーは存在しません。");
             return "redirect:/todos/user";
         }
         model.addAttribute("userForm", UserForm.from(user));
@@ -104,7 +101,7 @@ public class UserController {
     public String check(@PathVariable String id, Model model, RedirectAttributes redirect) {
         User user = userService.findById(id);
         if (user == null) {
-            redirect.addFlashAttribute("message", "指定されたユーザーが存在しません。");
+            redirect.addFlashAttribute("message", "指定されたユーザーは存在しません。");
             return "redirect:/todos/user";
         }
         model.addAttribute("user", user);
@@ -114,7 +111,7 @@ public class UserController {
     @PostMapping("/{id}/toggle")
     public String toggleStatus(@PathVariable String id, @RequestParam boolean status, RedirectAttributes redirect) {
         userService.changeStatus(id, status);
-        redirect.addFlashAttribute("message", "ユーザーの状態を更新しました。");
+        redirect.addFlashAttribute("message", "ユーザーの状態を変更しました。");
         return "redirect:/todos/user";
     }
 }
