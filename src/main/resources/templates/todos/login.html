@@ -80,7 +80,7 @@
 <body>
   <div class="page">
     <div class="card">
-      <h1>簡易ログイン</h1>
+      <h1>ToDoアプリ・ログイン</h1>
       <p th:if="${message}" th:text="${message}"></p>
       <form th:action="@{/todos/login}" th:object="${loginForm}" method="post">
         <p class="error" th:if="${#fields.hasGlobalErrors()}" th:text="${#fields.globalErrors[0].defaultMessage}"></p>
@@ -95,7 +95,6 @@
         <div class="actions">
           <button type="submit">ログイン</button>
         </div>
-        <p class="links">利用できるアカウント: admin / staff01 / staff02</p>
       </form>
     </div>
   </div>

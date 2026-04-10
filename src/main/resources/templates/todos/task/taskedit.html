@@ -24,14 +24,7 @@
     </header>
     <div class="form-card">
       <form th:action="${editing} ? @{/todos/task/taskedit/{id}(id=${todoForm.id})} : @{/todos/task/taskedit}" th:object="${todoForm}" method="post">
-        <div>
-          <label for="userId">担当者</label>
-          <select id="userId" th:field="*{userId}">
-            <option value="" disabled th:selected="${todoForm.userId == null}">担当者を選択</option>
-            <option th:each="user : ${users}" th:value="${user.id}" th:text="${user.name} + ' (' + ${user.id} + ')'" th:selected="${user.id == todoForm.userId}"></option>
-          </select>
-          <div class="error" th:if="${#fields.hasErrors('userId')}" th:errors="*{userId}"></div>
-        </div>
+        <input type="hidden" th:field="*{userId}" th:value="${currentUser.id}" />
         <div>
           <label for="title">タイトル</label>
           <input type="text" id="title" th:field="*{title}" maxlength="100" placeholder="例：議事録作成" />

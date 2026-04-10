@@ -34,7 +34,6 @@
     <table>
       <thead>
         <tr>
-          <th>担当者</th>
           <th>タイトル</th>
           <th>期限</th>
           <th>優先度</th>
@@ -44,10 +43,6 @@
       </thead>
       <tbody>
         <tr th:each="todo : ${todos}">
-          <td>
-            <strong th:text="${todo.userName != null} ? todo.userName : todo.userId"></strong>
-            <div style="font-size:12px; color:#475569;" th:text="${todo.userId}"></div>
-          </td>
           <td th:text="${todo.title}"></td>
           <td>
             <span th:if="${todo.dueDate != null}" th:text="${#temporals.format(todo.dueDate,'yyyy/MM/dd')}">-</span>
@@ -68,7 +63,7 @@
           </td>
         </tr>
         <tr th:if="${#lists.isEmpty(todos)}">
-          <td colspan="6" style="text-align:center; padding:20px; color:#475569;">登録済みのタスクがありません。</td>
+          <td colspan="5" style="text-align:center; padding:20px; color:#475569;">登録済みのタスクがありません。</td>
         </tr>
       </tbody>
     </table>

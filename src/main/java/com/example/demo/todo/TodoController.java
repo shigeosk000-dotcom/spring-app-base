@@ -1,6 +1,6 @@
 package com.example.demo.todo;
 
-import java.util.List;
+import java.util.Objects;
 
 import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
@@ -17,7 +17,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import com.example.demo.user.User;
-import com.example.demo.user.UserService;
 
 import lombok.RequiredArgsConstructor;
 
@@ -26,16 +25,10 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class TodoController {
     private final TodoService service;
-    private final UserService userService;
 
     @ModelAttribute("priorities")
     public Priority[] priorities() {
         return Priority.values();
-    }
-
-    @ModelAttribute("users")
-    public List<User> users() {
-        return userService.listActive();
     }
 
     @ModelAttribute("currentUser")
@@ -49,23 +42,41 @@ public class TodoController {
     }
 
     @GetMapping("/tasklist")
-    public String list(Model model) {
-        model.addAttribute("todos", service.list());
+    public String list(Model model, @ModelAttribute("currentUser") User currentUser) {
+        if (currentUser == null) {
+            return "redirect:/todos/login";
+        }
+        model.addAttribute("todos", service.listByUser(currentUser.getId()));
         return "todos/task/tasklist";
     }
 
     @GetMapping("/taskedit")
-    public String createForm(Model model) {
-        model.addAttribute("todoForm", new TodoForm());
+    public String createForm(Model model, @ModelAttribute("currentUser") User currentUser) {
+        if (currentUser == null) {
+            return "redirect:/todos/login";
+        }
+        TodoForm todoForm = new TodoForm();
+        todoForm.setUserId(currentUser.getId());
+        model.addAttribute("todoForm", todoForm);
         model.addAttribute("editing", false);
         return "todos/task/taskedit";
     }
 
     @GetMapping("/taskedit/{id}")
-    public String editForm(@PathVariable Long id, Model model, RedirectAttributes redirect) {
+    public String editForm(@PathVariable Long id,
+            Model model,
+            RedirectAttributes redirect,
+            @ModelAttribute("currentUser") User currentUser) {
+        if (currentUser == null) {
+            return "redirect:/todos/login";
+        }
         Todo todo = service.findById(id);
         if (todo == null) {
-            redirect.addFlashAttribute("message", "該当するタスクは存在しません。");
+            redirect.addFlashAttribute("message", "該当するタスクは存在しません。" );
+            return "redirect:/todos/task/tasklist";
+        }
+        if (!belongsToCurrentUser(todo, currentUser)) {
+            redirect.addFlashAttribute("message", "閲覧権限がありません。");
             return "redirect:/todos/task/tasklist";
         }
         model.addAttribute("todoForm", TodoForm.from(todo));
@@ -77,7 +88,12 @@ public class TodoController {
     public String create(@Valid @ModelAttribute("todoForm") TodoForm form,
             BindingResult binding,
             Model model,
-            RedirectAttributes redirect) {
+            RedirectAttributes redirect,
+            @ModelAttribute("currentUser") User currentUser) {
+        if (currentUser == null) {
+            return "redirect:/todos/login";
+        }
+        form.setUserId(currentUser.getId());
         if (binding.hasErrors()) {
             model.addAttribute("editing", false);
             return "todos/task/taskedit";
@@ -92,23 +108,42 @@ public class TodoController {
             @Valid @ModelAttribute("todoForm") TodoForm form,
             BindingResult binding,
             Model model,
-            RedirectAttributes redirect) {
+            RedirectAttributes redirect,
+            @ModelAttribute("currentUser") User currentUser) {
+        if (currentUser == null) {
+            return "redirect:/todos/login";
+        }
+        form.setUserId(currentUser.getId());
         if (binding.hasErrors()) {
             model.addAttribute("editing", true);
             return "todos/task/taskedit";
         }
         Todo todo = form.toTodo();
         todo.setId(id);
+        if (!belongsToCurrentUser(todo, currentUser)) {
+            redirect.addFlashAttribute("message", "閲覧権限がありません。");
+            return "redirect:/todos/task/tasklist";
+        }
         service.update(todo);
         redirect.addFlashAttribute("message", "タスクを更新しました。");
         return "redirect:/todos/task/taskcheck/" + id;
     }
 
     @GetMapping("/taskcheck/{id}")
-    public String check(@PathVariable Long id, Model model, RedirectAttributes redirect) {
+    public String check(@PathVariable Long id,
+            Model model,
+            RedirectAttributes redirect,
+            @ModelAttribute("currentUser") User currentUser) {
+        if (currentUser == null) {
+            return "redirect:/todos/login";
+        }
         Todo todo = service.findById(id);
         if (todo == null) {
-            redirect.addFlashAttribute("message", "該当するタスクは存在しません。");
+            redirect.addFlashAttribute("message", "該当するタスクは存在しません。" );
+            return "redirect:/todos/task/tasklist";
+        }
+        if (!belongsToCurrentUser(todo, currentUser)) {
+            redirect.addFlashAttribute("message", "閲覧権限がありません。");
             return "redirect:/todos/task/tasklist";
         }
         model.addAttribute("todo", todo);
@@ -116,15 +151,40 @@ public class TodoController {
     }
 
     @PostMapping("/tasklist/{id}/toggle")
-    public String toggle(@PathVariable Long id, @RequestParam boolean status, RedirectAttributes redirect) {
+    public String toggle(@PathVariable Long id,
+            @RequestParam boolean status,
+            RedirectAttributes redirect,
+            @ModelAttribute("currentUser") User currentUser) {
+        if (currentUser == null) {
+            return "redirect:/todos/login";
+        }
+        Todo todo = service.findById(id);
+        if (todo == null || !belongsToCurrentUser(todo, currentUser)) {
+            redirect.addFlashAttribute("message", "閲覧権限がありません。");
+            return "redirect:/todos/task/tasklist";
+        }
         service.changeStatus(id, status);
         return "redirect:/todos/task/tasklist";
     }
 
     @PostMapping("/tasklist/{id}/delete")
-    public String delete(@PathVariable Long id, RedirectAttributes redirect) {
+    public String delete(@PathVariable Long id,
+            RedirectAttributes redirect,
+            @ModelAttribute("currentUser") User currentUser) {
+        if (currentUser == null) {
+            return "redirect:/todos/login";
+        }
+        Todo todo = service.findById(id);
+        if (todo == null || !belongsToCurrentUser(todo, currentUser)) {
+            redirect.addFlashAttribute("message", "閲覧権限がありません。");
+            return "redirect:/todos/task/tasklist";
+        }
         service.delete(id);
         redirect.addFlashAttribute("message", "タスクを削除しました。");
         return "redirect:/todos/task/tasklist";
+    }
+
+    private boolean belongsToCurrentUser(Todo todo, User currentUser) {
+        return todo != null && currentUser != null && Objects.equals(todo.getUserId(), currentUser.getId());
     }
 }
