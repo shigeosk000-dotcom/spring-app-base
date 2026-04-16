@@ -1,5 +1,6 @@
 ﻿<!DOCTYPE html>
 <html lang="ja" xmlns:th="http://www.thymeleaf.org">
+
 <head>
   <meta charset="UTF-8" />
   <title>ユーザー管理</title>
@@ -49,7 +50,8 @@
       margin-top: 12px;
     }
 
-    th, td {
+    th,
+    td {
       border: 1px solid #e2e8f0;
       padding: 10px 12px;
       text-align: left;
@@ -105,6 +107,7 @@
     }
   </style>
 </head>
+
 <body>
   <div class="page">
     <header>
@@ -113,10 +116,11 @@
         <p>管理者・一般職員を登録・編集し、状態を切り替えられます。</p>
         <form th:action="@{/todos/logout}" method="post" style="margin:0;">
           <span th:if="${currentUser != null}" th:text="${currentUser.name} + ' (' + ${currentUser.id} + ')'"></span>
-          <button type="submit" style="margin-left:12px; background:#2563eb; color:#fff; border:none; padding:6px 10px; border-radius:4px;">ログアウト</button>
+          <button type="submit"
+            style="margin-left:12px; background:#2563eb; color:#fff; border:none; padding:6px 10px; border-radius:4px;">ログアウト</button>
         </form>
       </div>
-      <p><a href="/todos">タスク一覧に戻る</a></p>
+      <!-- <p><a href="/todos/task">タスク一覧に戻る</a></p> -->
     </header>
 
     <div th:if="${message}" class="flash" th:text="${message}"></div>
@@ -166,4 +170,5 @@
     </section>
   </div>
 </body>
+
 </html>

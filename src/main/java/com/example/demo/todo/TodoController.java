@@ -2,7 +2,6 @@ package com.example.demo.todo;
 
 import java.util.Objects;
 
-import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
 
 import org.springframework.stereotype.Controller;
@@ -14,6 +13,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.SessionAttribute;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import com.example.demo.user.User;
@@ -25,6 +25,12 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class TodoController {
     private final TodoService service;
+    private static final String FIND_BY_ID_QUERY_TEMPLATE = """
+            SELECT t.task_id, t.user_id, u.name AS user_name, t.title, t.description, t.due_date, t.priority, t.status
+            FROM todo t
+            LEFT JOIN user_list u ON u.id = t.user_id
+            WHERE t.task_id = %d
+            """;
 
     @ModelAttribute("priorities")
     public Priority[] priorities() {
@@ -32,8 +38,8 @@ public class TodoController {
     }
 
     @ModelAttribute("currentUser")
-    public User currentUser(HttpSession session) {
-        return session != null ? (User) session.getAttribute("currentUser") : null;
+    public User currentUser(@SessionAttribute(name = "currentUser", required = false) User currentUser) {
+        return currentUser;
     }
 
     @GetMapping
@@ -42,7 +48,7 @@ public class TodoController {
     }
 
     @GetMapping("/tasklist")
-    public String list(Model model, @ModelAttribute("currentUser") User currentUser) {
+    public String list(Model model, @SessionAttribute(name = "currentUser", required = false) User currentUser) {
         if (currentUser == null) {
             return "redirect:/todos/login";
         }
@@ -51,7 +57,7 @@ public class TodoController {
     }
 
     @GetMapping("/taskedit")
-    public String createForm(Model model, @ModelAttribute("currentUser") User currentUser) {
+    public String createForm(Model model, @SessionAttribute(name = "currentUser", required = false) User currentUser) {
         if (currentUser == null) {
             return "redirect:/todos/login";
         }
@@ -66,17 +72,20 @@ public class TodoController {
     public String editForm(@PathVariable Long id,
             Model model,
             RedirectAttributes redirect,
-            @ModelAttribute("currentUser") User currentUser) {
+            @SessionAttribute(name = "currentUser", required = false) User currentUser) {
         if (currentUser == null) {
             return "redirect:/todos/login";
         }
         Todo todo = service.findById(id);
         if (todo == null) {
-            redirect.addFlashAttribute("message", "該当するタスクは存在しません。" );
+            redirect.addFlashAttribute("message", "該当するタスクは存在しません。");
             return "redirect:/todos/task/tasklist";
         }
+        String debugMessage = buildPermissionDebugMessage(todo, currentUser);
+        model.addAttribute("debugPopupMessage", debugMessage);
+        redirect.addFlashAttribute("debugPopupMessage", debugMessage);
         if (!belongsToCurrentUser(todo, currentUser)) {
-            redirect.addFlashAttribute("message", "閲覧権限がありません。");
+            addPermissionDeniedWithQuery(redirect, id);
             return "redirect:/todos/task/tasklist";
         }
         model.addAttribute("todoForm", TodoForm.from(todo));
@@ -89,7 +98,7 @@ public class TodoController {
             BindingResult binding,
             Model model,
             RedirectAttributes redirect,
-            @ModelAttribute("currentUser") User currentUser) {
+            @SessionAttribute(name = "currentUser", required = false) User currentUser) {
         if (currentUser == null) {
             return "redirect:/todos/login";
         }
@@ -109,7 +118,7 @@ public class TodoController {
             BindingResult binding,
             Model model,
             RedirectAttributes redirect,
-            @ModelAttribute("currentUser") User currentUser) {
+            @SessionAttribute(name = "currentUser", required = false) User currentUser) {
         if (currentUser == null) {
             return "redirect:/todos/login";
         }
@@ -120,8 +129,14 @@ public class TodoController {
         }
         Todo todo = form.toTodo();
         todo.setId(id);
-        if (!belongsToCurrentUser(todo, currentUser)) {
-            redirect.addFlashAttribute("message", "閲覧権限がありません。");
+        Todo existing = service.findById(id);
+        if (existing == null) {
+            addPermissionDeniedWithQuery(redirect, id);
+            return "redirect:/todos/task/tasklist";
+        }
+        addPermissionDebugPopup(redirect, existing, currentUser);
+        if (!belongsToCurrentUser(existing, currentUser)) {
+            addPermissionDeniedWithQuery(redirect, id);
             return "redirect:/todos/task/tasklist";
         }
         service.update(todo);
@@ -133,17 +148,20 @@ public class TodoController {
     public String check(@PathVariable Long id,
             Model model,
             RedirectAttributes redirect,
-            @ModelAttribute("currentUser") User currentUser) {
+            @SessionAttribute(name = "currentUser", required = false) User currentUser) {
         if (currentUser == null) {
             return "redirect:/todos/login";
         }
         Todo todo = service.findById(id);
         if (todo == null) {
-            redirect.addFlashAttribute("message", "該当するタスクは存在しません。" );
+            redirect.addFlashAttribute("message", "該当するタスクは存在しません。");
             return "redirect:/todos/task/tasklist";
         }
+        String debugMessage = buildPermissionDebugMessage(todo, currentUser);
+        model.addAttribute("debugPopupMessage", debugMessage);
+        redirect.addFlashAttribute("debugPopupMessage", debugMessage);
         if (!belongsToCurrentUser(todo, currentUser)) {
-            redirect.addFlashAttribute("message", "閲覧権限がありません。");
+            addPermissionDeniedWithQuery(redirect, id);
             return "redirect:/todos/task/tasklist";
         }
         model.addAttribute("todo", todo);
@@ -154,13 +172,18 @@ public class TodoController {
     public String toggle(@PathVariable Long id,
             @RequestParam boolean status,
             RedirectAttributes redirect,
-            @ModelAttribute("currentUser") User currentUser) {
+            @SessionAttribute(name = "currentUser", required = false) User currentUser) {
         if (currentUser == null) {
             return "redirect:/todos/login";
         }
         Todo todo = service.findById(id);
-        if (todo == null || !belongsToCurrentUser(todo, currentUser)) {
-            redirect.addFlashAttribute("message", "閲覧権限がありません。");
+        if (todo == null) {
+            addPermissionDeniedWithQuery(redirect, id);
+            return "redirect:/todos/task/tasklist";
+        }
+        addPermissionDebugPopup(redirect, todo, currentUser);
+        if (!belongsToCurrentUser(todo, currentUser)) {
+            addPermissionDeniedWithQuery(redirect, id);
             return "redirect:/todos/task/tasklist";
         }
         service.changeStatus(id, status);
@@ -170,13 +193,18 @@ public class TodoController {
     @PostMapping("/tasklist/{id}/delete")
     public String delete(@PathVariable Long id,
             RedirectAttributes redirect,
-            @ModelAttribute("currentUser") User currentUser) {
+            @SessionAttribute(name = "currentUser", required = false) User currentUser) {
         if (currentUser == null) {
             return "redirect:/todos/login";
         }
         Todo todo = service.findById(id);
-        if (todo == null || !belongsToCurrentUser(todo, currentUser)) {
-            redirect.addFlashAttribute("message", "閲覧権限がありません。");
+        if (todo == null) {
+            addPermissionDeniedWithQuery(redirect, id);
+            return "redirect:/todos/task/tasklist";
+        }
+        addPermissionDebugPopup(redirect, todo, currentUser);
+        if (!belongsToCurrentUser(todo, currentUser)) {
+            addPermissionDeniedWithQuery(redirect, id);
             return "redirect:/todos/task/tasklist";
         }
         service.delete(id);
@@ -186,5 +214,26 @@ public class TodoController {
 
     private boolean belongsToCurrentUser(Todo todo, User currentUser) {
         return todo != null && currentUser != null && Objects.equals(todo.getUserId(), currentUser.getId());
+    }
+
+    private void addPermissionDeniedWithQuery(RedirectAttributes redirect, Long id) {
+        redirect.addFlashAttribute("message", "閲覧権限がありません。");
+        redirect.addFlashAttribute("lastQuery", FIND_BY_ID_QUERY_TEMPLATE.formatted(id));
+    }
+
+    private void addPermissionDebugPopup(RedirectAttributes redirect, Todo todo, User currentUser) {
+        redirect.addFlashAttribute("debugPopupMessage", buildPermissionDebugMessage(todo, currentUser));
+    }
+
+    private String buildPermissionDebugMessage(Todo todo, User currentUser) {
+        String todoDebug = todo == null
+                ? "null"
+                : "taskId=" + todo.getId() + ", userId=" + todo.getUserId() + ", title=" + todo.getTitle();
+        String currentUserDebug = currentUser == null
+                ? "null"
+                : "id=" + currentUser.getId() + ", name=" + currentUser.getName();
+        return "権限チェック直前デバッグ\n"
+                + "toto(todo): " + todoDebug + "\n"
+                + "currentUser: " + currentUserDebug;
     }
 }

@@ -15,6 +15,7 @@
     .actions button.toggle { background:#10b981; color:#fff; }
     .actions button.delete { background:#fee2e2; color:#991b1b; }
     .flash { margin-bottom:16px; padding:12px; background:#e0f2fe; border:1px solid #bae6fd; }
+    .flash-query { margin-top:8px; padding:10px; background:#f8fafc; border:1px solid #cbd5e1; font-family:Consolas,monospace; font-size:12px; white-space:pre-wrap; }
   </style>
 </head>
 <body>
@@ -29,7 +30,10 @@
       </div>
     </header>
 
-    <div th:if="${message}" class="flash" th:text="${message}"></div>
+    <div th:if="${message}" class="flash">
+      <div th:text="${message}"></div>
+      <pre th:if="${lastQuery}" class="flash-query" th:text="${lastQuery}"></pre>
+    </div>
 
     <table>
       <thead>
@@ -68,5 +72,8 @@
       </tbody>
     </table>
   </div>
+  <script th:if="${debugPopupMessage}" th:inline="javascript">
+    alert([[${debugPopupMessage}]]);
+  </script>
 </body>
 </html>

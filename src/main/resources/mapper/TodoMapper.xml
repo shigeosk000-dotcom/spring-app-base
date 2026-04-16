@@ -3,7 +3,7 @@
 <mapper namespace="com.example.demo.todo.TodoMapper">
 
   <resultMap id="TodoResult" type="com.example.demo.todo.Todo">
-    <id property="id" column="id" />
+    <id property="id" column="task_id" />
     <result property="userId" column="user_id" />
     <result property="userName" column="user_name" />
     <result property="title" column="title" />
@@ -14,7 +14,7 @@
   </resultMap>
 
   <select id="findAll" resultMap="TodoResult">
-    SELECT t.id,
+    SELECT t.task_id,
            t.user_id,
            u.name AS user_name,
            t.title,
@@ -24,11 +24,11 @@
            t.status
     FROM todo t
     LEFT JOIN user_list u ON u.id = t.user_id
-    ORDER BY CASE WHEN t.due_date IS NULL THEN 1 ELSE 0 END, t.due_date, t.id
+    ORDER BY CASE WHEN t.due_date IS NULL THEN 1 ELSE 0 END, t.due_date, t.task_id
   </select>
 
   <select id="findByUserId" resultMap="TodoResult">
-    SELECT t.id,
+    SELECT t.task_id,
            t.user_id,
            u.name AS user_name,
            t.title,
@@ -39,11 +39,11 @@
     FROM todo t
     LEFT JOIN user_list u ON u.id = t.user_id
     WHERE t.user_id = #{userId}
-    ORDER BY CASE WHEN t.due_date IS NULL THEN 1 ELSE 0 END, t.due_date, t.id
+    ORDER BY CASE WHEN t.due_date IS NULL THEN 1 ELSE 0 END, t.due_date, t.task_id
   </select>
 
   <select id="findById" resultMap="TodoResult">
-    SELECT t.id,
+    SELECT t.task_id,
            t.user_id,
            u.name AS user_name,
            t.title,
@@ -53,10 +53,10 @@
            t.status
     FROM todo t
     LEFT JOIN user_list u ON u.id = t.user_id
-    WHERE t.id = #{id}
+    WHERE t.task_id = #{id}
   </select>
 
-  <insert id="insert" parameterType="com.example.demo.todo.Todo" useGeneratedKeys="true" keyProperty="id">
+  <insert id="insert" parameterType="com.example.demo.todo.Todo" useGeneratedKeys="true" keyProperty="id" keyColumn="task_id">
     INSERT INTO todo (user_id, title, description, due_date, priority, status)
     VALUES (#{userId}, #{title}, #{description}, #{dueDate}, #{priority}, #{status})
   </insert>
@@ -69,17 +69,17 @@
         due_date = #{dueDate},
         priority = #{priority},
         status = #{status}
-    WHERE id = #{id}
+    WHERE task_id = #{id}
   </update>
 
   <delete id="delete">
     DELETE FROM todo
-    WHERE id = #{id}
+    WHERE task_id = #{id}
   </delete>
 
   <update id="changeStatus">
     UPDATE todo
     SET status = #{status}
-    WHERE id = #{id}
+    WHERE task_id = #{id}
   </update>
 </mapper>
