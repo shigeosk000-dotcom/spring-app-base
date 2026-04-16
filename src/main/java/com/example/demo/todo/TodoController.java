@@ -81,9 +81,6 @@ public class TodoController {
             redirect.addFlashAttribute("message", "該当するタスクは存在しません。");
             return "redirect:/todos/task/tasklist";
         }
-        String debugMessage = buildPermissionDebugMessage(todo, currentUser);
-        model.addAttribute("debugPopupMessage", debugMessage);
-        redirect.addFlashAttribute("debugPopupMessage", debugMessage);
         if (!belongsToCurrentUser(todo, currentUser)) {
             addPermissionDeniedWithQuery(redirect, id);
             return "redirect:/todos/task/tasklist";
@@ -134,7 +131,6 @@ public class TodoController {
             addPermissionDeniedWithQuery(redirect, id);
             return "redirect:/todos/task/tasklist";
         }
-        addPermissionDebugPopup(redirect, existing, currentUser);
         if (!belongsToCurrentUser(existing, currentUser)) {
             addPermissionDeniedWithQuery(redirect, id);
             return "redirect:/todos/task/tasklist";
@@ -157,9 +153,6 @@ public class TodoController {
             redirect.addFlashAttribute("message", "該当するタスクは存在しません。");
             return "redirect:/todos/task/tasklist";
         }
-        String debugMessage = buildPermissionDebugMessage(todo, currentUser);
-        model.addAttribute("debugPopupMessage", debugMessage);
-        redirect.addFlashAttribute("debugPopupMessage", debugMessage);
         if (!belongsToCurrentUser(todo, currentUser)) {
             addPermissionDeniedWithQuery(redirect, id);
             return "redirect:/todos/task/tasklist";
@@ -181,7 +174,6 @@ public class TodoController {
             addPermissionDeniedWithQuery(redirect, id);
             return "redirect:/todos/task/tasklist";
         }
-        addPermissionDebugPopup(redirect, todo, currentUser);
         if (!belongsToCurrentUser(todo, currentUser)) {
             addPermissionDeniedWithQuery(redirect, id);
             return "redirect:/todos/task/tasklist";
@@ -202,7 +194,6 @@ public class TodoController {
             addPermissionDeniedWithQuery(redirect, id);
             return "redirect:/todos/task/tasklist";
         }
-        addPermissionDebugPopup(redirect, todo, currentUser);
         if (!belongsToCurrentUser(todo, currentUser)) {
             addPermissionDeniedWithQuery(redirect, id);
             return "redirect:/todos/task/tasklist";
@@ -219,21 +210,5 @@ public class TodoController {
     private void addPermissionDeniedWithQuery(RedirectAttributes redirect, Long id) {
         redirect.addFlashAttribute("message", "閲覧権限がありません。");
         redirect.addFlashAttribute("lastQuery", FIND_BY_ID_QUERY_TEMPLATE.formatted(id));
-    }
-
-    private void addPermissionDebugPopup(RedirectAttributes redirect, Todo todo, User currentUser) {
-        redirect.addFlashAttribute("debugPopupMessage", buildPermissionDebugMessage(todo, currentUser));
-    }
-
-    private String buildPermissionDebugMessage(Todo todo, User currentUser) {
-        String todoDebug = todo == null
-                ? "null"
-                : "taskId=" + todo.getId() + ", userId=" + todo.getUserId() + ", title=" + todo.getTitle();
-        String currentUserDebug = currentUser == null
-                ? "null"
-                : "id=" + currentUser.getId() + ", name=" + currentUser.getName();
-        return "権限チェック直前デバッグ\n"
-                + "toto(todo): " + todoDebug + "\n"
-                + "currentUser: " + currentUserDebug;
     }
 }
